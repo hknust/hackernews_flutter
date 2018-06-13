@@ -13,7 +13,9 @@ class HackerNewsFlutter extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hacker News Flutter',
-      theme: ThemeData(primaryColor: Colors.indigo),
+      theme: ThemeData(
+        primaryColor: Color.fromARGB(255, 255, 102, 0)
+      ),
       home: ArticlesPage(),
     );
   }

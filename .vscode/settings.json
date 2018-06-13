@@ -1,3 +1,4 @@
 {
-    "dart.sdkPath": "/usr/lib/dart"
+    "dart.sdkPath": "/usr/lib/dart",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

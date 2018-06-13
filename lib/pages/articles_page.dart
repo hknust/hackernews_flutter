@@ -11,16 +11,17 @@ import '../ui/favorite_button.dart';
 class ArticlesPage extends StatefulWidget {
   @override
 
-  createState() => NewsEntriesState();
+  createState() => ArticlesPageState();
 }
 
-class NewsEntriesState extends State<ArticlesPage>
+class ArticlesPageState extends State<ArticlesPage>
  {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   final List<HackerNewsArticle> _newsEntries = [];
   final Set<HackerNewsArticle> _savedEntries = Set<HackerNewsArticle>();
   final HackerNewsService hackerNewsService = HackerNewsService();
-
+ 
+  bool overlayShouldBeVisible = false;
   final TextStyle _biggerFontStyle = TextStyle(fontSize: 18.0);
   int _nextPage = 1;
   bool _isLastPage = false;
