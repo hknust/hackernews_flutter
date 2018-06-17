@@ -3,7 +3,7 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'pages/articles_page.dart';
+import 'widgets/articles.dart';
 
 void main() => runApp(new HackerNewsFlutter());
 

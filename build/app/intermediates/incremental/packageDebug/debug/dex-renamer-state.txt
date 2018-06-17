@@ -1,4 +1,0 @@
-#Tue Jun 12 22:20:21 EDT 2018
-base.0=/home/holger/git/github/hackernews_flutter/build/app/intermediates/transforms/dexMerger/debug/0
-path.0=classes.dex
-renamed.0=classes.dex
