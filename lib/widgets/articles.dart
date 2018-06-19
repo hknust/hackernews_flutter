@@ -17,9 +17,9 @@ class ArticlesPageState extends State<ArticlesPage>
  {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = 
           GlobalKey<RefreshIndicatorState>();
-  final List<HackerNewsArticle> _newsEntries = [];
+  final List<HackerNewsArticle> _newsArticles = [];
   final HackerNewsService hackerNewsService = HackerNewsService();
-  final Set<HackerNewsArticle> _savedEntries = Set<HackerNewsArticle>();
+  final Set<HackerNewsArticle> _starredArticles = Set<HackerNewsArticle>();
 
   bool overlayShouldBeVisible = false;
   final TextStyle _biggerFontStyle = TextStyle(fontSize: 18.0);
@@ -30,8 +30,10 @@ class ArticlesPageState extends State<ArticlesPage>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Hacker News Flutter'),
+          leading: Image.asset('assets/images/hn_logo_48x48.png'),
           actions: <Widget>[
+            IconButton(icon: Icon(Icons.share), onPressed: null),
+            IconButton(icon: Icon(Icons.refresh), onPressed: null),
             IconButton(icon: Icon(Icons.list), onPressed: _navigateToSavedPage)
           ],
         ),
@@ -41,11 +43,12 @@ class ArticlesPageState extends State<ArticlesPage>
   @override
   void initState() {
     super.initState();
-    _getInitialNewsEntries();
+    _nextPage = 1;
+    _retrieveArticles();
   }
 
   Widget _buildBody() {
-    if (_newsEntries.isEmpty) {
+    if (_newsArticles.isEmpty) {
       return Center(
         child: Container(
           margin: EdgeInsets.only(top: 8.0),
@@ -55,9 +58,11 @@ class ArticlesPageState extends State<ArticlesPage>
         ),
       );
     } else {
+      _nextPage = 1;
+
       return RefreshIndicator(
         key: _refreshIndicatorKey,
-        onRefresh: _getInitialNewsEntries,
+        onRefresh: _retrieveArticles,
         child: _buildNewsEntriesListView(),
       );
     }
@@ -68,13 +73,13 @@ class ArticlesPageState extends State<ArticlesPage>
       if (index.isOdd) return Divider();
 
       final i = index ~/ 2;
-      if (i < _newsEntries.length) {
-        return _buildNewsEntryRow(_newsEntries[i]);
-      } else if (i == _newsEntries.length) {
+      if (i < _newsArticles.length) {
+        return _buildNewsEntryRow(_newsArticles[i]);
+      } else if (i == _newsArticles.length) {
         if (_isLastPage) {
           return null;
         } else {
-          _getNewsEntries();
+          _retrieveArticles();
           return Center(
             child: Container(
               margin: EdgeInsets.only(top: 8.0),
@@ -84,7 +89,7 @@ class ArticlesPageState extends State<ArticlesPage>
             ),
           );
         }
-      } else if (i > _newsEntries.length) {
+      } else if (i > _newsArticles.length) {
         return null;
       }
     });
@@ -99,7 +104,9 @@ Widget _buildNewsEntryRow(HackerNewsArticle newsEntry) {
       ),
       subtitle: Text('${newsEntry.domain} | ${newsEntry.commentsCount} comments'),
       trailing: FavoriteButton(
-          newsEntry: newsEntry, savedEntries: _savedEntries, handleFavoritePressed: _handleFavoritePressed),
+          newsEntry: newsEntry, 
+          savedEntries: _starredArticles, 
+          handleFavoritePressed: _handleFavoritePressed),
       onTap: () {
         _viewHackerNewsArticle(newsEntry);
       },
@@ -109,47 +116,53 @@ Widget _buildNewsEntryRow(HackerNewsArticle newsEntry) {
   Widget _buildBadge(int points) {
     return Container(
       margin: const EdgeInsets.only(bottom: 2.0),
-      width: 36.0,
-      height: 36.0,
+      width: 40.0,
+      height: 40.0,
       decoration:
-          BoxDecoration(color: (points == null || points < 100) ? Colors.red : Colors.green, shape: BoxShape.circle),
+          BoxDecoration(color: (points == null || points < 100) ? Colors.red : Colors.green, 
+                        shape: BoxShape.circle),
       child: Container(
         padding: EdgeInsets.all(1.0),
         child: Center(
-          child: Text(points == null ? '' : '$points', style: TextStyle(color: Colors.white, fontSize: 16.0)),
+          child: Text(points == null ? '' : '$points', 
+                      style: TextStyle(color: Colors.white, fontSize: 14.0)
+                     ),
         ),
       ),
     );
   }
 
-  Future<Null> _getInitialNewsEntries() async {
+  void _reloadArticles() {
     _nextPage = 1;
-    await _getNewsEntries();
+    _retrieveArticles();
   }
 
-  Future<Null> _getNewsEntries() async {
-    final newsEntries = await hackerNewsService.getNewsEntries(_nextPage);
-    if (newsEntries.isEmpty) {
+  Future<Null> _retrieveArticles() async {
+    final articles = await hackerNewsService.getNewsEntries(_nextPage);
+    if (articles.isEmpty) {
       setState(() {
         _isLastPage = true;
       });
     } else {
       setState(() {
-        _newsEntries.addAll(newsEntries);
+        _newsArticles.addAll(articles);
         _nextPage++;
       });
     }
   }
 
   void _navigateToSavedPage() {
-    Navigator.of(context).push(new MaterialPageRoute(builder: (context) => new StarredArticlesPage(_savedEntries)));
+    Navigator.of(context).push(
+      new MaterialPageRoute(builder: (context) => new StarredArticlesPage(_starredArticles))
+    );
   }
 
   void _viewHackerNewsArticle(HackerNewsArticle newsEntry) {
     url_launcher.launch(newsEntry.url);
   }
 
-  void _handleFavoritePressed(HackerNewsArticle newsEntry, bool isAlreadySaved, Set<HackerNewsArticle> savedEntries) {
+  void _handleFavoritePressed(HackerNewsArticle newsEntry, bool isAlreadySaved, 
+                              Set<HackerNewsArticle> savedEntries) {
     setState(() {
       if (isAlreadySaved) {
         savedEntries.remove(newsEntry);
